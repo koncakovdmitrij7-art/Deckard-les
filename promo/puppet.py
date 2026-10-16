@@ -13,7 +13,7 @@ from PIL import Image
 
 # Разметка в координатах assets/mascot.png (1749x1758)
 NECK = (850, 470)
-SHOULDER_L = (480, 760)
+WRIST_L = (322, 870)  # кисть с открытой ладонью гнётся в запястье, плечо не режем
 ELBOW_R = (1550, 770)  # запястье: кисть с лампой гнётся здесь
 HIP_L = (650, 1250)
 HIP_R = (1070, 1250)
@@ -21,8 +21,7 @@ FEET = (850, 1740)
 EYES = ((795, 259), (1005, 262))
 EYE_SIZE = (96, 50)
 
-ARM_L_POLY = [(0, 560), (300, 540), (470, 560), (540, 700), (520, 900), (470, 1010), (300, 1020), (0, 1030)]
-ARM_L_FILL = [(525, 540), (478, 630), (448, 750), (432, 880), (428, 1000), (440, 1060), (650, 1060), (650, 540)]
+HAND_L_POLY = [(-50, 640), (200, 688), (258, 742), (300, 760), (330, 773), (348, 830), (350, 900), (338, 952), (302, 972), (240, 998), (-50, 1012)]
 ARM_R_POLY = [(1330, -50), (1820, -50), (1820, 740), (1665, 768), (1600, 792), (1520, 786), (1462, 745), (1440, 640), (1462, 560), (1330, 480)]
 
 
@@ -86,7 +85,7 @@ class Puppet:
 
         head = self.ellipse_mask((840, 240), (420, 300)) * soft(sy < 470)
         head = np.maximum(head, soft((sy < 470) & (sx < 640) & (sx > 380)) * soft(sy < 470))  # наушник/дым
-        arm_l = self.poly_mask(ARM_L_POLY)
+        arm_l = self.poly_mask(HAND_L_POLY)
         arm_r = self.poly_mask(ARM_R_POLY) * (1 - head)
         leg_l = soft((sy > 1180) & (sx < 870))
         leg_r = soft((sy > 1180) & (sx >= 870))
@@ -96,12 +95,11 @@ class Puppet:
         rgb = self.base[..., :3].astype(np.uint8)
         alpha = self.base[..., 3]
         shape = np.maximum.reduce([
-            self.poly_mask(ARM_L_FILL, 0),
+            self.ellipse_mask((318, 870), (48, 108), 0),   # конец рукава под манжетой
             self.ellipse_mask((850, 470), (300, 90), 0),   # шея под головой
-            self.ellipse_mask((520, 690), (95, 150), 0),   # плечо под левой рукой
             self.ellipse_mask((1530, 735), (120, 80), 0),  # манжета под кистью с лампой
         ])
-        shape *= (alpha > 0) | (self.poly_mask(ARM_L_FILL, 0) > 0)
+        shape *= alpha > 0
         fill = (shape > 0).astype(np.uint8)
         # инпейнт только из ткани тела: всё, что не тело, сначала красим в цвет ткани
         cx, cy = self.p((700, 1150))
@@ -169,7 +167,7 @@ class Puppet:
             "body": root,
             "head": root @ rot(P(NECK), pose.get("head", 0.0)),
             "armR": root @ rot(P(ELBOW_R), pose.get("armR", 0.0)),
-            "armL": root @ rot(P(SHOULDER_L), -pose.get("armL", 0.0)),
+            "armL": root @ rot(P(WRIST_L), -0.5 * pose.get("armL", 0.0)),  # жест передаётся кистью
         }
         out = np.zeros((self.H, self.W, 4), np.float32)
         for name in ("legL", "legR", "body", "head", "armR", "armL"):

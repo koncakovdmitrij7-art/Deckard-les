@@ -446,7 +446,7 @@ def main():
            "-i", str(HERE / "voice.wav"), "-i", str(HERE / "music.wav"),
            "-filter_complex", audio, "-map", "0:v", "-map", "[a]",
            "-c:v", "libx264", "-preset", "slow", "-crf", "17", "-profile:v", "high",
-           "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", "-ar", "44100",
+           "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-ac", "2",
            "-shortest", "-movflags", "+faststart", str(out)]
     p = subprocess.Popen(cmd, stdin=subprocess.PIPE)
     with mp.get_context("fork").Pool(mp.cpu_count()) as pool:

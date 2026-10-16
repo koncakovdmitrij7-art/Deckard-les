@@ -1,8 +1,14 @@
-"""Озвучка промо-ролика Deckcard через RHVoice (офлайн) -> voice.wav + timings.json.
+"""Озвучка промо-ролика Deckcard нейросетевым голосом Piper (офлайн) -> voice.wav + timings.json.
 
-Субтитры показывают text, а голос читает say (там правки ударений/темпа).
+text — реплика (для таймингов сцен), say — то, что читает голос (правки ударений/пауз).
+Модель голоса (не хранится в репозитории):
+  curl -L https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/vits-piper-ru_RU-dmitri-medium.tar.bz2 \
+    | tar xj -C promo/models
+  pip install sherpa-onnx
 """
 import json
+import numpy as np
+import sherpa_onnx
 import subprocess
 import wave
 from pathlib import Path
@@ -10,8 +16,8 @@ from pathlib import Path
 HERE = Path(__file__).parent
 TMP = HERE / "build"
 TMP.mkdir(exist_ok=True)
-VOICE = "aleksandr-hq"
-RATE = 22050
+VOICE = HERE / "models" / "vits-piper-ru_RU-dmitri-medium"
+RATE = 44100
 TARGET = 15.0
 LEAD, TAIL = 0.35, 0.6
 
@@ -24,20 +30,35 @@ LINES = [
 ]
 
 
+TTS = sherpa_onnx.OfflineTts(sherpa_onnx.OfflineTtsConfig(model=sherpa_onnx.OfflineTtsModelConfig(
+    vits=sherpa_onnx.OfflineTtsVitsModelConfig(model=str(VOICE / "ru_RU-dmitri-medium.onnx"),
+                                               tokens=str(VOICE / "tokens.txt"),
+                                               data_dir=str(VOICE / "espeak-ng-data")),
+    num_threads=4)))
+
+
 def synth(text, out, rate):
+    """rate — темп в процентах (100 = обычный)."""
+    audio = TTS.generate(text, sid=0, speed=rate / 100)
     raw = out.with_suffix(".raw.wav")
-    subprocess.run(["RHVoice-test", "-p", VOICE, "-r", str(rate), "-o", str(raw)],
-                   input=text.encode(), check=True)
-    # единый формат + обрезка тишины по краям
+    with wave.open(str(raw), "w") as w:
+        w.setnchannels(1)
+        w.setsampwidth(2)
+        w.setframerate(audio.sample_rate)
+        w.writeframes((np.clip(np.array(audio.samples), -1, 1) * 32767).astype(np.int16).tobytes())
+    # единый формат, обрезка тишины по краям, «дикторская» обработка: срез низа, присутствие, компрессия
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(raw), "-ar", str(RATE), "-ac", "1",
                     "-af", "silenceremove=start_periods=1:start_threshold=-45dB,"
-                           "areverse,silenceremove=start_periods=1:start_threshold=-45dB,areverse",
+                           "areverse,silenceremove=start_periods=1:start_threshold=-45dB,areverse,"
+                           "highpass=f=90,equalizer=f=3200:t=q:w=1:g=3,"
+                           "acompressor=threshold=-18dB:ratio=3:attack=5:release=80",
                     str(out)], check=True)
     with wave.open(str(out)) as w:
         return w.getnframes() / w.getframerate()
 
 
 def build(rate):
+    global TAIL
     t, parts = LEAD, []
     for i, ln in enumerate(LINES):
         f = TMP / f"line{i}.wav"
@@ -48,13 +69,15 @@ def build(rate):
     return t + TAIL, parts
 
 
-rate = 100
+rate = 95  # естественный темп
 total, parts = build(rate)
-# подгоняем темп речи, чтобы ролик уложился примерно в 15 секунд
-for _ in range(4):
-    if abs(total - TARGET) < 0.4:
-        break
-    rate = max(60, min(200, int(rate * total / TARGET)))
+# добиваем до ~15 с паузами между репликами, а не замедлением речи
+extra = TARGET - total
+if extra > 0:
+    gaps = [ln for ln in LINES[:-1]]
+    for ln in gaps:
+        ln["gap"] += extra * 0.8 / len(gaps)
+    TAIL += extra * 0.2
     total, parts = build(rate)
 
 inputs, filters = [], []
