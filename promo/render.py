@@ -1,13 +1,15 @@
 """Рендер 15-секундного промо-ролика Deckcard для TikTok (1080x1920, 60 fps).
 
-Верх кадра — анимированные сцены, низ — персонаж-маскот, который
-«говорит» в такт озвучке; реплики появляются в его облачке.
+Верх кадра — анимированные сцены, низ — живой персонаж-маскот
+(перекладная анимация из puppet.py): ходит, жестикулирует, прыгает,
+моргает и кивает в такт озвучке. Субтитров нет.
 Кадры рисуются Pillow и уходят в ffmpeg через pipe; звук — voice.wav
 (tts.py) + music.wav (music.py) с ducking-ом музыки под голос.
 Важное держим вне зон интерфейса TikTok (верх ~180px, правая колонка
 кнопок, подпись снизу).
 """
 import json
+import multiprocessing as mp
 import math
 import random
 import subprocess
@@ -17,6 +19,8 @@ from pathlib import Path
 
 import numpy as np
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
+
+from puppet import Puppet
 
 HERE = Path(__file__).parent
 W, H, FPS = 1080, 1920, 60
@@ -45,8 +49,6 @@ LINES = timings["lines"]
 TOTAL = timings["total"]
 B = [ln["start"] for ln in LINES] + [TOTAL]
 B[0] = 0.0
-KEYWORDS = ("пять", "часов", "нет,", "успеваешь?", "deckcard", "deckcard!", "deckcard.",
-            "считанные", "минуты.", "минуты")
 
 # --- огибающая голоса: по ней маскот «говорит»
 with wave.open(str(HERE / "voice.wav")) as wf:
@@ -65,12 +67,11 @@ def voice_env(t):
     return float(VOICE_ENV[i]) if i < len(VOICE_ENV) else 0.0
 
 
-# --- маскот
-MASCOT_H = 800
-_m = Image.open(HERE / "assets" / "mascot.png").convert("RGBA")
-MASCOT = _m.resize((int(_m.width * MASCOT_H / _m.height), MASCOT_H), Image.LANCZOS)
-MASCOT_X, MASCOT_Y = -70, 1150  # левый верхний угол в покое
-HEAD = (MASCOT_X + int(MASCOT.width * 0.47), MASCOT_Y + int(MASCOT_H * 0.13))
+# --- маскот (перекладная анимация, см. puppet.py)
+MASCOT_H = 880
+PUPPET = Puppet(HERE / "assets" / "mascot.png", MASCOT_H)
+GROUND = 1895  # y ступней на экране
+BLINKS = (1.1, 3.0, 5.5, 7.9, 10.3, 12.4, 14.1)
 
 # --- частицы фона
 random.seed(3)
@@ -287,84 +288,118 @@ def transform(layer, scale, alpha, dy=0):
     return layer
 
 
-# ---------------- маскот и облачко
+# ---------------- маскот: хореография по сценам
+
+def smooth(t):
+    t = max(0.0, min(1.0, t))
+    return t * t * (3 - 2 * t)
+
+
+def walk(ph, amp):
+    s = math.sin(ph)
+    return dict(legL=9 * s * amp, legR=9 * s * amp, liftL=max(0, s) * 45 * amp, liftR=max(0, -s) * 45 * amp,
+                body=4 * s * amp, y=-abs(s) * 16 * amp, armL=12 * s * amp, armR=-8 * s * amp)
+
+
+def add(*ds):
+    out = {}
+    for d in ds:
+        for k, v in d.items():
+            out[k] = out.get(k, 0.0) + v
+    return out
+
+
+def seg_intro(t):
+    """Выходит слева, останавливается и показывает на таймер."""
+    u = t / 1.6
+    x = lerp(-330, 430, smooth(u))
+    amp = 1 - smooth((t - 1.45) / 0.3)
+    k = smooth((t - 1.5) / 0.4)
+    return add(walk(x / 38, amp), dict(x=x, armL=k * (38 + 10 * math.sin(t * 5)), head=k * (-7 + 3 * math.sin(t * 2)),
+                                       armR=k * 8))
+
+
+def seg_panic(t):
+    """Паника: машет руками, трясёт головой, подпрыгивает."""
+    lt = t - B[1]
+    return dict(x=430 + 22 * math.sin(lt * 6.5), armL=45 + 38 * math.sin(lt * 13), armR=8 + 22 * math.sin(lt * 13 + 3.1),
+                head=10 * math.sin(lt * 8), y=-abs(math.sin(lt * 6.5)) * 50, body=4 * math.sin(lt * 13),
+                squash=0.04 * math.cos(lt * 13))
+
+
+def seg_reveal(t):
+    """Прыжок от радости с поднятыми руками."""
+    lt = t - B[2]
+    u = lt / 0.75
+    y = -math.sin(math.pi * min(1, max(0, u))) * 210 if u < 1 else 0
+    sq = -0.06 * math.sin(math.pi * min(1, u)) if u < 1 else 0.1 * math.sin(math.pi * min(1, (u - 1) / 0.35))
+    tuck = math.sin(math.pi * min(1, max(0, u))) if u < 1 else 0
+    return dict(x=430, y=y, squash=sq, armL=88 + 10 * math.sin(lt * 12), armR=35 + 6 * math.sin(lt * 12),
+                head=6 * math.sin(lt * 5), legL=-10 * tuck, legR=10 * tuck)
+
+
+def seg_build(t):
+    """Идёт к центру и показывает на собирающиеся слайды."""
+    lt = t - B[3]
+    x = lerp(430, 575, smooth(lt / 1.1))
+    amp = 1 - smooth((lt - 1.1) / 0.3)
+    k = smooth((lt - 0.9) / 0.5)
+    return add(walk(x / 38, amp), dict(x=x, armL=k * (58 + 6 * math.sin(lt * 3)), armR=k * (15 + 8 * math.sin(lt * 2.5)),
+                                       head=k * (-5 + 2 * math.sin(lt * 2)), body=k * 2 * math.sin(lt * 2)))
+
+
+def seg_cta(t):
+    """Машет рукой и пританцовывает."""
+    lt = t - B[4]
+    return dict(x=575, armL=72 + 20 * math.sin(lt * 11), armR=25 + 5 * math.sin(lt * 5.5),
+                y=-abs(math.sin(lt * 5.5)) * 32, head=6 * math.sin(lt * 5.5), body=3 * math.sin(lt * 5.5),
+                squash=0.03 * math.cos(lt * 11))
+
+
+SEGS = (seg_intro, seg_panic, seg_reveal, seg_build, seg_cta)
+
+
+def mascot_pose(t):
+    i = scene_idx(t)
+    pose = SEGS[i](t)
+    if i > 0:
+        k = smooth((t - B[i]) / 0.35)
+        prev = SEGS[i - 1](t)
+        pose = {key: lerp(prev.get(key, 0.0), pose.get(key, 0.0), k) for key in set(prev) | set(pose)}
+    e = voice_env(t)
+    pose["head"] = pose.get("head", 0.0) + 3.5 * e * math.sin(t * 15)  # кивает в такт речи
+    pose["squash"] = pose.get("squash", 0.0) + 0.012 * math.sin(t * 3)  # дыхание
+    pose["y"] = pose.get("y", 0.0) - 5 * e
+    return pose
+
+
+def blink(t):
+    for tb in BLINKS:
+        if tb <= t < tb + 0.16:
+            return math.sin(math.pi * (t - tb) / 0.16)
+    return 0.0
+
 
 def draw_mascot(img, t):
+    pose = mascot_pose(t)
+    x, y = pose.get("x", 430), pose.get("y", 0.0)
+    # тень на «полу»: меньше и прозрачнее, когда маскот в воздухе
+    h = min(1, -y / 300)
+    sh = Image.new("RGBA", (W // 4, H // 4), (0, 0, 0, 0))
+    sd = ImageDraw.Draw(sh)
+    rw, rh = (340 * (1 - 0.5 * h)) / 4, 34 / 4
+    sd.ellipse((x / 4 - rw / 2, GROUND / 4 - rh, x / 4 + rw / 2, GROUND / 4 + rh), fill=(0, 0, 0, int(150 * (1 - 0.6 * h))))
+    img.alpha_composite(sh.filter(ImageFilter.GaussianBlur(4)).resize((W, H), Image.BILINEAR))
+    # свечение за спиной
     e = voice_env(t)
-    enter = ease_back(t / 0.7)
-    jump = 0.0
-    if B[2] <= t < B[2] + 0.6:  # радостный прыжок на «Решение есть»
-        jump = math.sin((t - B[2]) / 0.6 * math.pi) * 90
-    y = MASCOT_Y + (1 - enter) * 700 + math.sin(t * 2.4) * 10 - jump - e * 10
-    rot = math.sin(t * 1.7) * 2.0 + e * 2.5 * math.sin(t * 9)
-    sy = 1 + 0.03 * e
-    m = MASCOT.resize((MASCOT.width, int(MASCOT_H * sy)), Image.BILINEAR) if e > 0.02 else MASCOT
-    m = m.rotate(rot, resample=Image.BICUBIC, expand=True, center=(m.width / 2, m.height))
-    # свечение за маскотом, пульсирует от голоса
     glow = Image.new("RGBA", (W // 4, H // 4), (0, 0, 0, 0))
     gd = ImageDraw.Draw(glow)
-    gx, gy, r = (MASCOT_X + MASCOT.width / 2) / 4, (y + 320) / 4, 95 + 20 * e
-    gd.ellipse((gx - r, gy - r, gx + r, gy + r), fill=rgba(ACCENT, 0.35 + 0.25 * e))
-    glow = glow.filter(ImageFilter.GaussianBlur(30)).resize((W, H), Image.BILINEAR)
-    img.alpha_composite(glow)
-    img.alpha_composite(m, (int(MASCOT_X - (m.width - MASCOT.width) / 2), int(y - (m.height - MASCOT_H * sy))))
-
-
-def words_layout(text, f, maxw, d):
-    lines, cur = [], []
-    for w in text.split():
-        test = " ".join(cur + [w])
-        if cur and d.textlength(test, font=f) > maxw:
-            lines.append(cur)
-            cur = [w]
-        else:
-            cur.append(w)
-    lines.append(cur)
-    return lines
-
-
-def draw_bubble(img, t):
-    for ln in LINES:
-        if not (ln["start"] - 0.05 <= t < ln["end"] + 0.25):
-            continue
-        lt = t - ln["start"] + 0.05
-        s = ease_back(lt / 0.3)
-        if t > ln["end"]:
-            s *= 1 - ease((t - ln["end"]) / 0.25)
-        if s <= 0.02:
-            return
-        layer = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-        d = ImageDraw.Draw(layer)
-        maxw = 760
-        rows = words_layout(ln["text"], F_BUBBLE, maxw, d)
-        lh = 66
-        bw = max(d.textlength(" ".join(r), font=F_BUBBLE) for r in rows) + 90
-        bh = len(rows) * lh + 56
-        cx, bottom = 520, 1100
-        x0, y0 = cx - bw / 2, bottom - bh
-        d.rounded_rectangle((x0 + 8, y0 + 12, x0 + bw + 8, bottom + 12), 40, fill=(0, 0, 0, 90))
-        d.rounded_rectangle((x0, y0, x0 + bw, bottom), 40, fill=rgba(WHITE, 1))
-        # хвостик к голове маскота
-        d.polygon([(x0 + 150, bottom - 2), (x0 + 250, bottom - 2), (HEAD[0] - 40, HEAD[1] - 20)], fill=rgba(WHITE, 1))
-        # ведём слова по мере произнесения: уже сказанные — ярче
-        words = [w for r in rows for w in r]
-        said = (t - ln["start"]) / max(0.1, ln["end"] - ln["start"]) * len(words)
-        n = 0
-        for ri, r in enumerate(rows):
-            line_w = d.textlength(" ".join(r), font=F_BUBBLE)
-            x = cx - line_w / 2
-            y = y0 + 28 + ri * lh + lh / 2
-            for w in r:
-                key = w.lower().strip("—") in KEYWORDS
-                col = (ACCENT if key else INK) if n < said + 0.5 else mix(WHITE, INK, 0.35)
-                d.text((x, y), w, font=F_BUBBLE, fill=rgba(col, 1), anchor="lm")
-                x += d.textlength(w + " ", font=F_BUBBLE)
-                n += 1
-        layer = transform(layer, s, 1) if abs(s - 1) > 0.01 else layer
-        img.alpha_composite(layer)
-        return
-
-
+    gx, gy, r = x / 4, (GROUND + y - 520) / 4, 100 + 18 * e
+    gd.ellipse((gx - r, gy - r, gx + r, gy + r), fill=rgba(ACCENT, 0.3 + 0.2 * e))
+    img.alpha_composite(glow.filter(ImageFilter.GaussianBlur(30)).resize((W, H), Image.BILINEAR))
+    m = PUPPET.render(pose, blink(t))
+    fx, fy = PUPPET.feet
+    img.alpha_composite(m, (int(x - fx), int(GROUND + y - fy)))
 # ---------------- кадр целиком
 
 def frame(t):
@@ -380,7 +415,6 @@ def frame(t):
         cur = transform(cur, 0.85 + 0.15 * k, k)
     img.alpha_composite(cur)
     draw_mascot(img, t)
-    draw_bubble(img, t)
     # белая вспышка на дропе
     if B[2] <= t < B[2] + 0.2:
         f = 1 - (t - B[2]) / 0.2
@@ -391,9 +425,8 @@ def frame(t):
     return img.convert("RGB")
 
 
-def srt_time(s):
-    ms = int(round(s * 1000))
-    return f"{ms // 3600000:02d}:{ms // 60000 % 60:02d}:{ms // 1000 % 60:02d},{ms % 1000:03d}"
+def render_frame(i):
+    return frame(i / FPS).tobytes()
 
 
 def main():
@@ -403,9 +436,6 @@ def main():
         if "--only-stills" in sys.argv:
             return
     out = HERE / "deckcard_promo_tiktok.mp4"
-    with open(HERE / "deckcard_promo.srt", "w", encoding="utf-8") as f:
-        for i, ln in enumerate(LINES, 1):
-            f.write(f"{i}\n{srt_time(ln['start'])} --> {srt_time(ln['end'])}\n{ln['text']}\n\n")
     n = int(TOTAL * FPS)
     audio = ("[1:a]aresample=44100,asplit=2[v1][v2];"
              "[2:a]aresample=44100,volume=0.5[m];"
@@ -419,10 +449,11 @@ def main():
            "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", "-ar", "44100",
            "-shortest", "-movflags", "+faststart", str(out)]
     p = subprocess.Popen(cmd, stdin=subprocess.PIPE)
-    for i in range(n):
-        p.stdin.write(frame(i / FPS).tobytes())
-        if i % 120 == 0:
-            print(f"{i}/{n}", file=sys.stderr)
+    with mp.get_context("fork").Pool(mp.cpu_count()) as pool:
+        for i, fr in enumerate(pool.imap(render_frame, range(n), chunksize=4)):
+            p.stdin.write(fr)
+            if i % 120 == 0:
+                print(f"{i}/{n}", file=sys.stderr)
     p.stdin.close()
     p.wait()
     print(out)
