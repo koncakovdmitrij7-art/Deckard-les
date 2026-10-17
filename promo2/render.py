@@ -170,48 +170,67 @@ def L_led(text, cell=22, color=ORANGE, size=20):
     return out
 
 
-# ---------------------------------------------------------------- пиксельный персонаж
+# ---------------------------------------------------------------- персонаж: карточка-логотип Deckcard
 
-SPRITE = [
-    "....OOOOOOOO....",
-    "...OOOOOOOOOO...",
-    "..OOOOOOOOOOOO..",
-    "..OOOEOOOOEOOO..",
-    "..OOOEOOOOEOOO..",
-    "OOOOOOOOOOOOOOOO",
-    "OOOOOOOOOOOOOOOO",
-    "..OOWWWWWWWWOO..",
-    "..OOWAAAAAWWOO..",
-    "..OOWWWWWWWWOO..",
-    "..DDDDDDDDDDDD..",
-]
-LEGS = ["...D.D....D.D...", "..D.D......D.D.."]
-PAL = {"O": ORANGE, "D": ORANGE_D, "E": (40, 30, 42), "W": (255, 250, 246), "A": VIOLET}
+BRAND_Y = (255, 212, 59)   # жёлтый из логотипа
+BRAND_K = (17, 17, 17)     # чёрный из логотипа
 
 
 @lru_cache(None)
-def L_sprite(px=10, legs=0, blink=False, happy=False):
-    rows = SPRITE + [LEGS[legs], LEGS[legs]]
-    w, h = len(rows[0]) * px, len(rows) * px
-    L = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+def L_sprite(px=10, legs=0, blink=False, happy=False, limbs=BRAND_K):
+    """Жёлтая карточка с чёрной рамкой и «dc» (как логотип) + ножки и ручки.
+
+    px задаёт масштаб (ширина карточки = 16*px). Рисуем в 3x и уменьшаем — края гладкие.
+    """
+    ss = 3
+    cw = 16 * px * ss
+    ch = int(cw * 0.57)
+    stroke = max(2 * ss, int(cw * 0.05))
+    leg_len, leg_w = int(cw * 0.17), max(2 * ss, int(cw * 0.045))
+    arm = int(cw * 0.16)
+    mx = arm + stroke
+    Wl, Hl = cw + 2 * mx, ch + leg_len + leg_w + 2 * stroke
+    L = Image.new("RGBA", (Wl, Hl), (0, 0, 0, 0))
     d = ImageDraw.Draw(L)
-    for y, row in enumerate(rows):
-        for x, ch in enumerate(row):
-            if ch == ".":
-                continue
-            if ch == "E" and (blink or (happy and y == 4)):
-                ch = "O"
-            d.rectangle((x * px, y * px, x * px + px - 1, y * px + px - 1), fill=(*PAL[ch], 255))
-    if happy:  # глаза-дуги
-        for ex in (5, 10):
-            d.rectangle((ex * px - px // 2, 3 * px, ex * px + px + px // 2 - 1, 3 * px + px // 2), fill=(40, 30, 42, 255))
-    return L
+    k = (*BRAND_K, 255)
+    lk = (*limbs, 255)
+    x0, y0, x1, y1 = mx, stroke, mx + cw, stroke + ch
+    # ножки (под карточкой)
+    sw = 0.07 if legs else 0.0  # на шаге ножки расходятся в стороны
+    for lx, dirn in ((0.36, -1), (0.64, 1)):
+        bx = x0 + cw * lx
+        fx = bx + dirn * cw * sw
+        fy = y1 + leg_len
+        d.line((bx, y1 - stroke, fx, fy), fill=lk, width=leg_w)
+        d.ellipse((fx - leg_w * 1.4, fy - leg_w * 0.8, fx + leg_w * 1.4, fy + leg_w * 0.8), fill=lk)
+    # ручки (по бокам)
+    ay = y0 + ch * 0.55
+    up = -1 if happy else 1
+    for sx, dirn in ((x0, -1), (x1, 1)):
+        ex, ey = sx + dirn * arm, ay + up * arm * 0.7
+        d.line((sx, ay, ex, ey), fill=lk, width=leg_w)
+        d.ellipse((ex - leg_w, ey - leg_w, ex + leg_w, ey + leg_w), fill=lk)
+    # карточка
+    r = int(cw * 0.045)
+    d.rounded_rectangle((x0, y0, x1, y1), r + stroke // 2, fill=k)
+    d.rounded_rectangle((x0 + stroke, y0 + stroke, x1 - stroke, y1 - stroke), max(1, r - stroke // 3), fill=(*BRAND_Y, 255))
+    # «dc» — буквы вплотную, как в логотипе
+    f = font("Black", int(ch * 0.62))
+    dw = d.textlength("d", font=f)
+    cwid = d.textlength("c", font=f)
+    gap = -ch * 0.035
+    tx = x0 + cw / 2 - (dw + cwid + gap) / 2
+    ty = y0 + ch * 0.52
+    d.text((tx, ty), "d", font=f, fill=k, anchor="lm")
+    d.text((tx + dw + gap, ty), "c", font=f, fill=k, anchor="lm")
+    return L.resize((Wl // ss, Hl // ss), Image.LANCZOS)
 
 
 def sprite(img, cx, bottom, px=10, t=0.0, walk=False, hop=0.0, rot=0.0, happy=False, a=1.0, s=1.0, seed=0):
     blink = ((t + seed * 0.7) % 3.1) < 0.12
     legs = int(t * 8) % 2 if walk else 0
-    L = L_sprite(px, legs, blink, happy)
+    limbs = (236, 236, 246) if CUR_THEME[0] in DARK_THEMES else BRAND_K  # на тёмном фоне ножки светлые
+    L = L_sprite(round(px * 1.25), legs, False, happy, limbs)
     comp(img, L, cx, bottom - L.height * s / 2 - hop, s=s, a=a, rot=rot)
     return bottom - L.height * s - hop  # верх головы
 
@@ -327,6 +346,7 @@ def background(name, t):
 
 
 DARK_THEMES = {"dark", "navy"}
+CUR_THEME = ["peach"]
 
 
 # ---------------------------------------------------------------- окна интерфейса
@@ -457,8 +477,8 @@ def sc_link(c):
     u = ease(lt / 0.5)
     L, ox, oy = shadowed(820, 150, 34, WHITE, pad=30, shadow=40)
     d = ImageDraw.Draw(L)
-    d.rounded_rectangle((ox + 26, oy + 30, ox + 116, oy + 120), 22, fill=ORANGE)
-    d.text((ox + 71, oy + 75), "dc", font=font("Black", 44), fill=WHITE, anchor="mm")
+    d.rounded_rectangle((ox + 26, oy + 30, ox + 116, oy + 120), 22, fill=BRAND_Y, outline=BRAND_K, width=5)
+    d.text((ox + 71, oy + 73), "dc", font=font("Black", 44), fill=BRAND_K, anchor="mm")
     d.text((ox + 140, oy + 50), "Друг · сейчас", font=font("SemiBold", 28), fill=(140, 142, 160), anchor="lm")
     d.text((ox + 140, oy + 98), "смотри, это спасёт → deckcard", font=font("Bold", 36), fill=INK, anchor="lm")
     comp(img, L, W / 2, lerp(-150, 300, u), 1, min(1, lt * 3))
@@ -876,6 +896,7 @@ def subtitles(img, t, dark):
 def frame(t):
     g = next(g for g in GROUPS if g["start"] <= t < g["end"]) if t < TOTAL else GROUPS[-1]
     theme, fn = SCENES[g["scene"]]
+    CUR_THEME[0] = theme
     img = background(theme, t)
     lt = t - g["start"]
     # «камера»: лёгкий наезд в течение сцены
