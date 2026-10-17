@@ -1,0 +1,950 @@
+{
+ "total": 65.712,
+ "lines": [
+  {
+   "scene": "night",
+   "start": 0.3,
+   "end": 3.259,
+   "words": [
+    {
+     "text": "Короче,",
+     "hl": false,
+     "start": 0.3
+    },
+    {
+     "text": "в",
+     "hl": false,
+     "start": 0.786
+    },
+    {
+     "text": "час",
+     "hl": false,
+     "start": 0.925
+    },
+    {
+     "text": "ночи",
+     "hl": false,
+     "start": 1.064
+    },
+    {
+     "text": "вспоминаю:",
+     "hl": false,
+     "start": 1.342
+    },
+    {
+     "text": "завтра",
+     "hl": false,
+     "start": 2.023
+    },
+    {
+     "text": "защита",
+     "hl": false,
+     "start": 2.301
+    },
+    {
+     "text": "курсовой.",
+     "hl": true,
+     "start": 2.718
+    }
+   ]
+  },
+  {
+   "scene": "docs",
+   "start": 3.399,
+   "end": 5.719,
+   "words": [
+    {
+     "text": "Текст",
+     "hl": false,
+     "start": 3.399
+    },
+    {
+     "text": "есть.",
+     "hl": false,
+     "start": 3.588
+    },
+    {
+     "text": "А",
+     "hl": false,
+     "start": 3.946
+    },
+    {
+     "text": "презентации",
+     "hl": true,
+     "start": 4.135
+    },
+    {
+     "text": "—",
+     "hl": false,
+     "start": 5.078
+    },
+    {
+     "text": "нет.",
+     "hl": false,
+     "start": 5.36
+    }
+   ]
+  },
+  {
+   "scene": "ppt",
+   "start": 5.859,
+   "end": 9.123,
+   "words": [
+    {
+     "text": "Открыл",
+     "hl": false,
+     "start": 5.859
+    },
+    {
+     "text": "PowerPoint.",
+     "hl": false,
+     "start": 6.225
+    },
+    {
+     "text": "Двигал",
+     "hl": false,
+     "start": 7.124
+    },
+    {
+     "text": "заголовок",
+     "hl": false,
+     "start": 7.491
+    },
+    {
+     "text": "сорок",
+     "hl": true,
+     "start": 8.224
+    },
+    {
+     "text": "минут.",
+     "hl": true,
+     "start": 8.591
+    }
+   ]
+  },
+  {
+   "scene": "prompt",
+   "start": 9.263,
+   "end": 11.37,
+   "words": [
+    {
+     "text": "Пошёл",
+     "hl": false,
+     "start": 9.263
+    },
+    {
+     "text": "к",
+     "hl": false,
+     "start": 9.603
+    },
+    {
+     "text": "нейросети,",
+     "hl": false,
+     "start": 9.773
+    },
+    {
+     "text": "а",
+     "hl": false,
+     "start": 10.537
+    },
+    {
+     "text": "там",
+     "hl": false,
+     "start": 10.707
+    },
+    {
+     "text": "промпт-ад:",
+     "hl": true,
+     "start": 10.877
+    }
+   ]
+  },
+  {
+   "scene": "prompt",
+   "start": 11.51,
+   "end": 14.519,
+   "words": [
+    {
+     "text": "«сделай",
+     "hl": false,
+     "start": 11.51
+    },
+    {
+     "text": "красиво»,",
+     "hl": false,
+     "start": 11.959
+    },
+    {
+     "text": "«добавь",
+     "hl": false,
+     "start": 12.745
+    },
+    {
+     "text": "стиль»,",
+     "hl": false,
+     "start": 13.194
+    },
+    {
+     "text": "«нет,",
+     "hl": true,
+     "start": 13.531
+    },
+    {
+     "text": "не",
+     "hl": true,
+     "start": 13.868
+    },
+    {
+     "text": "так».",
+     "hl": true,
+     "start": 14.093
+    }
+   ]
+  },
+  {
+   "scene": "link",
+   "start": 14.659,
+   "end": 16.722,
+   "words": [
+    {
+     "text": "И",
+     "hl": false,
+     "start": 14.659
+    },
+    {
+     "text": "тут",
+     "hl": false,
+     "start": 14.834
+    },
+    {
+     "text": "друг",
+     "hl": false,
+     "start": 15.009
+    },
+    {
+     "text": "кидает",
+     "hl": false,
+     "start": 15.184
+    },
+    {
+     "text": "ссылку:",
+     "hl": false,
+     "start": 15.708
+    },
+    {
+     "text": "Deckcard.",
+     "hl": true,
+     "start": 16.215
+    }
+   ]
+  },
+  {
+   "scene": "input",
+   "start": 16.862,
+   "end": 21.62,
+   "words": [
+    {
+     "text": "Пишешь",
+     "hl": false,
+     "start": 16.862
+    },
+    {
+     "text": "тему",
+     "hl": false,
+     "start": 17.197
+    },
+    {
+     "text": "обычным",
+     "hl": false,
+     "start": 17.532
+    },
+    {
+     "text": "языком",
+     "hl": false,
+     "start": 18.035
+    },
+    {
+     "text": "или",
+     "hl": false,
+     "start": 18.538
+    },
+    {
+     "text": "вставляешь",
+     "hl": false,
+     "start": 18.873
+    },
+    {
+     "text": "весь",
+     "hl": false,
+     "start": 19.375
+    },
+    {
+     "text": "текст",
+     "hl": false,
+     "start": 19.543
+    },
+    {
+     "text": "—",
+     "hl": false,
+     "start": 19.71
+    },
+    {
+     "text": "хоть",
+     "hl": false,
+     "start": 19.962
+    },
+    {
+     "text": "50 000",
+     "hl": true,
+     "start": 20.129
+    },
+    {
+     "text": "символов.",
+     "hl": false,
+     "start": 20.967
+    }
+   ]
+  },
+  {
+   "scene": "formats",
+   "start": 21.76,
+   "end": 24.895,
+   "words": [
+    {
+     "text": "Понимает",
+     "hl": false,
+     "start": 21.76
+    },
+    {
+     "text": "план",
+     "hl": false,
+     "start": 22.481
+    },
+    {
+     "text": "по",
+     "hl": false,
+     "start": 22.661
+    },
+    {
+     "text": "слайдам,",
+     "hl": false,
+     "start": 22.841
+    },
+    {
+     "text": "списки",
+     "hl": false,
+     "start": 23.292
+    },
+    {
+     "text": "и",
+     "hl": false,
+     "start": 23.652
+    },
+    {
+     "text": "даже",
+     "hl": false,
+     "start": 23.832
+    },
+    {
+     "text": "таблицы.",
+     "hl": true,
+     "start": 24.193
+    }
+   ]
+  },
+  {
+   "scene": "count",
+   "start": 25.035,
+   "end": 28.558,
+   "words": [
+    {
+     "text": "Слайдов",
+     "hl": false,
+     "start": 25.035
+    },
+    {
+     "text": "сколько",
+     "hl": false,
+     "start": 25.351
+    },
+    {
+     "text": "нужно:",
+     "hl": false,
+     "start": 25.667
+    },
+    {
+     "text": "авто",
+     "hl": false,
+     "start": 26.125
+    },
+    {
+     "text": "или",
+     "hl": false,
+     "start": 26.441
+    },
+    {
+     "text": "сам,",
+     "hl": false,
+     "start": 26.757
+    },
+    {
+     "text": "от",
+     "hl": false,
+     "start": 26.994
+    },
+    {
+     "text": "1",
+     "hl": false,
+     "start": 27.152
+    },
+    {
+     "text": "до",
+     "hl": false,
+     "start": 27.626
+    },
+    {
+     "text": "16.",
+     "hl": true,
+     "start": 27.784
+    }
+   ]
+  },
+  {
+   "scene": "photos",
+   "start": 28.698,
+   "end": 31.452,
+   "words": [
+    {
+     "text": "Свои",
+     "hl": false,
+     "start": 28.698
+    },
+    {
+     "text": "фото",
+     "hl": false,
+     "start": 29.068
+    },
+    {
+     "text": "прикрепляешь",
+     "hl": false,
+     "start": 29.438
+    },
+    {
+     "text": "к",
+     "hl": true,
+     "start": 30.177
+    },
+    {
+     "text": "нужному",
+     "hl": true,
+     "start": 30.362
+    },
+    {
+     "text": "слайду.",
+     "hl": true,
+     "start": 30.916
+    }
+   ]
+  },
+  {
+   "scene": "brain",
+   "start": 31.592,
+   "end": 35.375,
+   "words": [
+    {
+     "text": "Внутри",
+     "hl": false,
+     "start": 31.592
+    },
+    {
+     "text": "всё",
+     "hl": false,
+     "start": 31.933
+    },
+    {
+     "text": "честно:",
+     "hl": false,
+     "start": 32.103
+    },
+    {
+     "text": "ИИ",
+     "hl": false,
+     "start": 32.597
+    },
+    {
+     "text": "—",
+     "hl": false,
+     "start": 33.109
+    },
+    {
+     "text": "это",
+     "hl": false,
+     "start": 33.364
+    },
+    {
+     "text": "мозг:",
+     "hl": true,
+     "start": 33.705
+    },
+    {
+     "text": "смысл,",
+     "hl": false,
+     "start": 34.029
+    },
+    {
+     "text": "структура,",
+     "hl": false,
+     "start": 34.284
+    },
+    {
+     "text": "дизайн.",
+     "hl": false,
+     "start": 34.881
+    }
+   ]
+  },
+  {
+   "scene": "grid",
+   "start": 35.515,
+   "end": 38.893,
+   "words": [
+    {
+     "text": "А",
+     "hl": false,
+     "start": 35.515
+    },
+    {
+     "text": "код",
+     "hl": false,
+     "start": 35.644
+    },
+    {
+     "text": "—",
+     "hl": false,
+     "start": 35.773
+    },
+    {
+     "text": "это",
+     "hl": false,
+     "start": 35.966
+    },
+    {
+     "text": "руки:",
+     "hl": true,
+     "start": 36.224
+    },
+    {
+     "text": "сетка",
+     "hl": false,
+     "start": 36.598
+    },
+    {
+     "text": "и",
+     "hl": false,
+     "start": 36.856
+    },
+    {
+     "text": "выравнивание.",
+     "hl": false,
+     "start": 36.985
+    },
+    {
+     "text": "Ничего",
+     "hl": false,
+     "start": 37.874
+    },
+    {
+     "text": "не",
+     "hl": false,
+     "start": 38.261
+    },
+    {
+     "text": "съезжает.",
+     "hl": false,
+     "start": 38.39
+    }
+   ]
+  },
+  {
+   "scene": "layouts",
+   "start": 39.033,
+   "end": 42.608,
+   "words": [
+    {
+     "text": "13",
+     "hl": true,
+     "start": 39.033
+    },
+    {
+     "text": "типов",
+     "hl": false,
+     "start": 39.449
+    },
+    {
+     "text": "слайдов:",
+     "hl": false,
+     "start": 39.726
+    },
+    {
+     "text": "метрики,",
+     "hl": false,
+     "start": 40.128
+    },
+    {
+     "text": "процесс,",
+     "hl": false,
+     "start": 40.612
+    },
+    {
+     "text": "карточки,",
+     "hl": false,
+     "start": 40.959
+    },
+    {
+     "text": "галерея,",
+     "hl": false,
+     "start": 41.444
+    },
+    {
+     "text": "выводы.",
+     "hl": false,
+     "start": 42.067
+    }
+   ]
+  },
+  {
+   "scene": "genres",
+   "start": 42.748,
+   "end": 45.441,
+   "words": [
+    {
+     "text": "Под",
+     "hl": false,
+     "start": 42.748
+    },
+    {
+     "text": "задачу:",
+     "hl": false,
+     "start": 42.884
+    },
+    {
+     "text": "учёба,",
+     "hl": true,
+     "start": 43.414
+    },
+    {
+     "text": "питч,",
+     "hl": false,
+     "start": 43.89
+    },
+    {
+     "text": "аудит",
+     "hl": false,
+     "start": 44.094
+    },
+    {
+     "text": "или",
+     "hl": false,
+     "start": 44.503
+    },
+    {
+     "text": "история.",
+     "hl": false,
+     "start": 44.775
+    }
+   ]
+  },
+  {
+   "scene": "images",
+   "start": 45.581,
+   "end": 48.729,
+   "words": [
+    {
+     "text": "Нет",
+     "hl": false,
+     "start": 45.581
+    },
+    {
+     "text": "картинки",
+     "hl": false,
+     "start": 45.728
+    },
+    {
+     "text": "—",
+     "hl": false,
+     "start": 46.17
+    },
+    {
+     "text": "сам",
+     "hl": false,
+     "start": 46.39
+    },
+    {
+     "text": "подберёт",
+     "hl": false,
+     "start": 46.537
+    },
+    {
+     "text": "из",
+     "hl": false,
+     "start": 46.979
+    },
+    {
+     "text": "фотобанков",
+     "hl": true,
+     "start": 47.126
+    },
+    {
+     "text": "и",
+     "hl": false,
+     "start": 47.714
+    },
+    {
+     "text": "Википедии.",
+     "hl": false,
+     "start": 47.861
+    }
+   ]
+  },
+  {
+   "scene": "export",
+   "start": 48.869,
+   "end": 51.899,
+   "words": [
+    {
+     "text": "На",
+     "hl": false,
+     "start": 48.869
+    },
+    {
+     "text": "выходе",
+     "hl": false,
+     "start": 49.034
+    },
+    {
+     "text": "—",
+     "hl": false,
+     "start": 49.528
+    },
+    {
+     "text": "ровный",
+     "hl": false,
+     "start": 49.775
+    },
+    {
+     "text": "PPTX",
+     "hl": true,
+     "start": 50.104
+    },
+    {
+     "text": "16:9.",
+     "hl": false,
+     "start": 50.763
+    }
+   ]
+  },
+  {
+   "scene": "export",
+   "start": 52.039,
+   "end": 53.732,
+   "words": [
+    {
+     "text": "Открыл",
+     "hl": false,
+     "start": 52.039
+    },
+    {
+     "text": "—",
+     "hl": false,
+     "start": 52.336
+    },
+    {
+     "text": "и",
+     "hl": false,
+     "start": 52.559
+    },
+    {
+     "text": "сразу",
+     "hl": false,
+     "start": 52.707
+    },
+    {
+     "text": "на",
+     "hl": true,
+     "start": 53.004
+    },
+    {
+     "text": "защиту.",
+     "hl": true,
+     "start": 53.153
+    }
+   ]
+  },
+  {
+   "scene": "grade",
+   "start": 53.872,
+   "end": 56.611,
+   "words": [
+    {
+     "text": "Курсовую",
+     "hl": false,
+     "start": 53.872
+    },
+    {
+     "text": "я",
+     "hl": false,
+     "start": 54.426
+    },
+    {
+     "text": "защитил.",
+     "hl": true,
+     "start": 54.564
+    },
+    {
+     "text": "Выравнивать",
+     "hl": false,
+     "start": 55.103
+    },
+    {
+     "text": "ничего",
+     "hl": false,
+     "start": 55.657
+    },
+    {
+     "text": "не",
+     "hl": false,
+     "start": 56.072
+    },
+    {
+     "text": "пришлось.",
+     "hl": false,
+     "start": 56.21
+    }
+   ]
+  },
+  {
+   "scene": "outro",
+   "start": 56.751,
+   "end": 61.036,
+   "words": [
+    {
+     "text": "Deckcard",
+     "hl": true,
+     "start": 56.751
+    },
+    {
+     "text": "—",
+     "hl": false,
+     "start": 57.025
+    },
+    {
+     "text": "скажи",
+     "hl": false,
+     "start": 57.23
+    },
+    {
+     "text": "тему",
+     "hl": false,
+     "start": 57.504
+    },
+    {
+     "text": "обычным",
+     "hl": false,
+     "start": 57.778
+    },
+    {
+     "text": "языком",
+     "hl": false,
+     "start": 58.189
+    },
+    {
+     "text": "и",
+     "hl": false,
+     "start": 58.599
+    },
+    {
+     "text": "получи",
+     "hl": false,
+     "start": 58.736
+    },
+    {
+     "text": "ровную",
+     "hl": false,
+     "start": 59.147
+    },
+    {
+     "text": "презентацию.",
+     "hl": false,
+     "start": 59.557
+    },
+    {
+     "text": "Без",
+     "hl": true,
+     "start": 60.365
+    },
+    {
+     "text": "промпт-ада.",
+     "hl": true,
+     "start": 60.502
+    }
+   ]
+  },
+  {
+   "scene": "subscribe",
+   "start": 61.176,
+   "end": 64.912,
+   "words": [
+    {
+     "text": "Подписывайся",
+     "hl": false,
+     "start": 61.176
+    },
+    {
+     "text": "—",
+     "hl": false,
+     "start": 61.87
+    },
+    {
+     "text": "покажу,",
+     "hl": false,
+     "start": 62.078
+    },
+    {
+     "text": "как",
+     "hl": false,
+     "start": 62.564
+    },
+    {
+     "text": "он",
+     "hl": false,
+     "start": 62.703
+    },
+    {
+     "text": "собирает",
+     "hl": false,
+     "start": 62.842
+    },
+    {
+     "text": "колоду",
+     "hl": true,
+     "start": 63.398
+    },
+    {
+     "text": "из",
+     "hl": false,
+     "start": 63.814
+    },
+    {
+     "text": "обычного",
+     "hl": false,
+     "start": 63.953
+    },
+    {
+     "text": "текста.",
+     "hl": false,
+     "start": 64.509
+    }
+   ]
+  }
+ ]
+}
